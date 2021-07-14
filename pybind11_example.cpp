@@ -8,16 +8,20 @@
 namespace py = pybind11;
 
 class pynaphash
-{
+{   
     naphash nobj;
     int check_dct_dim;
+
 public:
-    pynaphash(const int _dct_dim=32, const bool _apply_center_crop=false, const bool _c3_is_rgb=true): 
-        nobj(_dct_dim, _apply_center_crop, _c3_is_rgb), check_dct_dim(_dct_dim) {}
+    pynaphash(const int _dct_dim=32, 
+              const naphash::rot_inv_type _rot_inv_mode=naphash::rot_inv_full, 
+              const bool _apply_center_crop=false, 
+              const bool _c3_is_rgb=true): 
+        nobj(_dct_dim, _rot_inv_mode, _apply_center_crop, _c3_is_rgb), check_dct_dim(_dct_dim) {}
     
     // wrap C++ function with NumPy array IO
     py::object get_hash(py::array inp,
-                      py::array trg) {
+                        py::array trg) {
           // check input dimensions
           if ( inp.ndim() < 2 || inp.ndim() > 3 )
             throw std::runtime_error("Input should be 2-D/3-D NumPy array");
@@ -43,9 +47,17 @@ public:
               throw std::runtime_error("Non-standard channel stride not supported. Use np.ascontiguousarray for inp!");
           // call pure C++ function
           if(inp.itemsize() == 1)
-              nobj.get_hash_u8(ptr, w, h, c, stepsz, ptr_trg);
+              nobj.get_dct_u8(ptr, w, h, c, stepsz, ptr_trg);
           else
-              nobj.get_hash_f32((float*)ptr, w, h, c, stepsz, ptr_trg);
+              nobj.get_dct_f32((float*)ptr, w, h, c, stepsz, ptr_trg);
+          return py::cast<py::none>(Py_None);
+    }
+    
+    py::object get_norm(py::array trg) {
+          if ( trg.ndim() != 1 ||  trg.itemsize() != 4 || trg.shape()[0] != nap_norm_len)
+            throw std::runtime_error("Target should be 1-D NumPy float array with a size of 324");
+          auto buf = trg.request();
+          nobj.get_nap_norm((float*)buf.ptr);
           return py::cast<py::none>(Py_None);
     }
 };
@@ -53,8 +65,14 @@ public:
 PYBIND11_MODULE(naphash_cpp, m) {
      m.doc() = "naphash; a dct-based image hash";
     // bindings to Pet class
+    py::enum_<naphash::rot_inv_type>(m, "rot_inv_type")
+        .value("none", naphash::rot_inv_none)
+        .value("swap", naphash::rot_inv_swap)
+        .value("full", naphash::rot_inv_full)
+        .export_values();
+    
     py::class_<pynaphash>(m, "naphash")
-        .def(py::init<const int, const bool, const bool>())
-        .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image");
-    //py::arg("i") = 1, py::arg("j") = 2
+        .def(py::init<const int, const naphash::rot_inv_type, const bool, const bool>(), py::arg("dct_dim") = 32, py::arg("rot_inv_mode") = naphash::rot_inv_full,  py::arg("apply_center_crop") = false, py::arg("is_rgb") = true)
+        .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image")
+        .def("get_norm",  &pynaphash::get_norm, "Get naphash norm coeff weights");
 }
