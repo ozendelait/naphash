@@ -3,6 +3,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
+#include <numeric>
 
 //internal method to convert, crop and resize input image to single channel cv::Mat
 static cv::Mat _naphash_getMat(uchar* ptr, int w, int h, int c, int imtype, int stepsz, bool is_rgb, bool apply_center_crop, int trg_sz) {
@@ -47,9 +48,18 @@ static void _naphash_cpyNorm(const float* pSrc, float* pTrg, int num_coeffs, con
 }
 
 naphash::naphash(int _dct_dim, rot_inv_type _rot_inv_mode, bool _apply_center_crop, bool _c3_is_rgb): 
-        dct_dim(_dct_dim), rot_inv_mode(_rot_inv_mode), apply_center_crop(_apply_center_crop), c3_is_rgb(_c3_is_rgb) {
+        dct_dim(_dct_dim), rot_inv_mode(_rot_inv_mode), 
+        apply_center_crop(_apply_center_crop), c3_is_rgb(_c3_is_rgb), nap_norm_len_tr(0) {
      const float * pDefaultNorm = _apply_center_crop?naphash_norm_crop:((_rot_inv_mode == rot_inv_full)?naphash_norm_rotinv:naphash_norm);
     _naphash_cpyNorm(pDefaultNorm, this->nap_norm_w, nap_norm_len, (_rot_inv_mode != rot_inv_none));
+    for(int i=0; i<nap_norm_len; ++i){ //setup access indices based on zig-zag pattern (increasing entropy)
+        nap_norm_idx[i] = naphash_idx0[i]*_dct_dim+naphash_idx1[i];
+        if(naphash_idx0[i] > naphash_idx1[i])
+            continue;
+        nap_norm_idx_tr0[nap_norm_len_tr] = i;
+        nap_norm_idx_tr1[nap_norm_len_tr++] = (naphash_idx0[i] == naphash_idx1[i])?i:i+1; //transposed idx is next (or same for diagonals)
+    }
+            
 }
 
 void naphash::get_dct_f32(float* ptr, int w, int h, int c, int stepsz, unsigned char* ptr_trg)
@@ -72,10 +82,47 @@ void naphash::get_dct_u8(unsigned char* ptr, int w, int h, int c, int stepsz, un
     if(this->rot_inv_mode != rot_inv_none)
         dct = cv::abs(dct);
 }
-                                                                  
+
+int naphash::get_bitlen()
+{
+    return (this->rot_inv_mode == rot_inv_full)?this->nap_norm_len_tr:((this->rot_inv_mode == rot_inv_swap)?naphash_nondiag_pack_len:naphash_pack_len);
+    
+}
+
 void naphash::get_hash_dct(float* dct, unsigned char* ptr_trg)
 {
-    memcpy(ptr_trg, dct, this->dct_dim*this->dct_dim*sizeof(float));
+    const bool concatenate_transposed = (this->rot_inv_mode == rot_inv_full);
+    const int num_add = concatenate_transposed?32:64; //calculate mean using this many normed entries
+    const float thr_f = concatenate_transposed?(float)(230.0/(256.0*num_add)):(float)(206.0/(256.0*num_add)); //norm mean by this factor
+    const int num_transp = concatenate_transposed?nap_norm_len_tr:0;
+    
+    float normed_coeffs[nap_norm_len], normed_coeffs_tr[nap_norm_len];
+    for(int i=0; i<nap_norm_len; ++i)
+        normed_coeffs[i]=this->nap_norm_w[i]*dct[nap_norm_idx[i]];
+    for(int i = 0; i < num_transp; ++i)
+        normed_coeffs_tr[i] = normed_coeffs[nap_norm_idx_tr0[i]]+normed_coeffs[nap_norm_idx_tr1[i]];
+    const float *pAcc =  concatenate_transposed?normed_coeffs_tr:normed_coeffs;
+    // regardless of result length, we use the same number of initial coefficients for mean (64 or 32)
+    const float thr_val = thr_f * std::accumulate(pAcc, pAcc+num_add,0);
+    char dbgtxt[1024]={0};
+    
+    const unsigned int *idx_pack = (this->rot_inv_mode == rot_inv_swap)?naphash_pack_nondiag_idx:naphash_pack_idx;
+    const unsigned int len_pack = this->get_bitlen();
+    const unsigned char set_bit_lut[8]={0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1};
+        
+    //pack result into ptr_trg bits
+    for(int i=0; i<len_pack/8; ++i)
+        ptr_trg[i] = 0;
+    for(int i=0; i<len_pack; ++i){
+        if(pAcc[idx_pack[i]] > thr_val)
+            ptr_trg[i/8] |= set_bit_lut[i&0x7];
+    }
+    /*sprintf(dbgtxt,"DEBUG: %f; \n%f %f %f %f %f %f %f %f\n %f %f %f %f %f %f %f %f", thr_val, 
+            pAcc[idx_pack[0]], pAcc[idx_pack[1]], pAcc[idx_pack[2]], pAcc[idx_pack[3]],
+            pAcc[idx_pack[4]], pAcc[idx_pack[5]], pAcc[idx_pack[6]], pAcc[idx_pack[7]],
+            pAcc[idx_pack[8]], pAcc[idx_pack[9]], pAcc[idx_pack[10]], pAcc[idx_pack[11]],
+            pAcc[idx_pack[12]], pAcc[idx_pack[13]], pAcc[idx_pack[14]], pAcc[idx_pack[15]]);
+    throw std::runtime_error(std::string(dbgtxt));*/
 }
 
 void naphash::get_hash_f32(float* ptr, int w, int h, int c, int stepsz, unsigned char* ptr_trg)

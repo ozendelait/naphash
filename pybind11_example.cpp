@@ -53,11 +53,51 @@ public:
           return py::cast<py::none>(Py_None);
     }
     
+    py::object get_hash_dct(py::array inp,
+                        py::array trg) {
+          // check input dimensions
+          if (inp.ndim() > 2 || inp.itemsize() != 4)
+            throw std::runtime_error("Input should be 1-D or 2-D NumPy float array");
+          if (trg.ndim() != 1 || trg.itemsize() != 1)
+            throw std::runtime_error("Target should be 1-D NumPy uint8 array");
+
+          auto buf = inp.request();
+          auto buf2 = trg.request();
+          if(inp.ndim() == 2 && (inp.shape()[0] !=  check_dct_dim 
+                               || inp.shape()[1] !=  check_dct_dim 
+                               || inp.strides()[0] != check_dct_dim*sizeof(float)))
+             throw std::runtime_error("Input 2D dct dimensions/step width invalid!");
+          else if(inp.ndim() == 1 && inp.shape()[0] !=  check_dct_dim*check_dct_dim*sizeof(float))
+             throw std::runtime_error("Input 1D dct size invalid!");
+          int num_trg_bytes = nobj.get_bitlen()/8;
+          if(trg.shape()[0] < num_trg_bytes){
+              char errorstr[64]={0};sprintf(errorstr,"Output needs minimum size of %i",  num_trg_bytes);
+              throw std::runtime_error(std::string(errorstr));
+          }
+        
+          float* ptr = (float*) buf.ptr;
+          unsigned char* ptr_trg = (unsigned char*) buf2.ptr;
+          nobj.get_hash_dct(ptr, ptr_trg);
+          return py::cast<py::none>(Py_None);
+    }
+             
+    int get_bitlen() {
+        return nobj.get_bitlen();
+    }
+             
     py::object get_norm(py::array trg) {
           if ( trg.ndim() != 1 ||  trg.itemsize() != 4 || trg.shape()[0] != nap_norm_len)
             throw std::runtime_error("Target should be 1-D NumPy float array with a size of 324");
           auto buf = trg.request();
           nobj.get_nap_norm((float*)buf.ptr);
+          return py::cast<py::none>(Py_None);
+    }
+    
+    py::object set_norm(py::array inp) {
+          if ( inp.ndim() != 1 ||  inp.itemsize() != 4 )
+            throw std::runtime_error("Input should be 1-D NumPy float array.");
+          auto buf = inp.request();
+          nobj.set_nap_norm((float*)buf.ptr, inp.shape()[0]);
           return py::cast<py::none>(Py_None);
     }
 };
@@ -74,5 +114,8 @@ PYBIND11_MODULE(naphash_cpp, m) {
     py::class_<pynaphash>(m, "naphash")
         .def(py::init<const int, const naphash::rot_inv_type, const bool, const bool>(), py::arg("dct_dim") = 32, py::arg("rot_inv_mode") = naphash::rot_inv_full,  py::arg("apply_center_crop") = false, py::arg("is_rgb") = true)
         .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image")
+        .def("get_hash_dct",  &pynaphash::get_hash_dct, "Calculate naphash based on dct input")
+        .def("get_bitlen",  &pynaphash::get_bitlen, "Returns number of usable bits of resulting naphashes")
+        .def("set_norm",  &pynaphash::set_norm, "Set custom naphash norm coeff weights")
         .def("get_norm",  &pynaphash::get_norm, "Get naphash norm coeff weights");
 }
