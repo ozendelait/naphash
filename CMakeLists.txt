@@ -19,5 +19,5 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs} ${CMAKE_CURREN
 message("Python libs: ${PYTHON_LIBRARIES}")
 message("OpenCV libs: ${OpenCV_LIBS}")
 
-pybind11_add_module(naphash_cpp pybind11_example.cpp naphash.cpp)
+pybind11_add_module(naphash_cpp pynaphash.cpp naphash.cpp)
 target_link_libraries(naphash_cpp PRIVATE ${OpenCV_LIBS} ${PYTHON_LIBRARIES})
