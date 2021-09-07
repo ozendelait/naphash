@@ -1,4 +1,5 @@
 .ipynb_checkpoints/*
 build/*
 inp.jpg
-
+training_paths.txt
+_*.ipynb
