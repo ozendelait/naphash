@@ -20,7 +20,7 @@ public:
         nobj(_dct_dim, _rot_inv_mode, _apply_center_crop, _c3_is_rgb), check_dct_dim(_dct_dim) {}
     
     // wrap C++ function with NumPy array IO
-    py::object get_hash(py::array inp,
+    py::object get_dct(py::array inp,
                         py::array trg) {
           // check input dimensions
           if ( inp.ndim() < 2 || inp.ndim() > 3 )
@@ -41,8 +41,6 @@ public:
           unsigned char* ptr = (unsigned char*) buf.ptr;
           unsigned char* ptr_trg = (unsigned char*) buf2.ptr;
           int stepsz = inp.strides()[0];
-          //char resstr[256]={0};sprintf(resstr,"Stride-Info: %i, %i; c: %i; itmsz:%i",  (int)inp.strides()[0], (int)inp.strides()[1], c, (int)inp.itemsize());
-          //throw std::runtime_error(std::string(resstr));
           if(inp.strides()[1] != inp.itemsize()*c)
               throw std::runtime_error("Non-standard channel stride not supported. Use np.ascontiguousarray for inp!");
           // call pure C++ function
@@ -52,12 +50,14 @@ public:
               nobj.get_dct_f32((float*)ptr, w, h, c, stepsz, ptr_trg);
           return py::cast<py::none>(Py_None);
     }
-    
+        
     py::object get_hash_dct(py::array inp,
                         py::array trg) {
           // check input dimensions
-          if (inp.ndim() > 2 || inp.itemsize() != 4)
-            throw std::runtime_error("Input should be 1-D or 2-D NumPy float array");
+           if ( inp.ndim() < 2 || inp.ndim() > 3 )
+            throw std::runtime_error("Input should be 2-D/3-D NumPy array");
+          if(inp.itemsize() != 4 && inp.itemsize() != 1)
+            throw std::runtime_error("Input data should be unsigned char or 32bit float");
           if (trg.ndim() != 1 || trg.itemsize() != 1)
             throw std::runtime_error("Target should be 1-D NumPy uint8 array");
 
@@ -78,6 +78,16 @@ public:
           float* ptr = (float*) buf.ptr;
           unsigned char* ptr_trg = (unsigned char*) buf2.ptr;
           nobj.get_hash_dct(ptr, ptr_trg);
+          return py::cast<py::none>(Py_None);
+    }
+    
+    // wrap C++ function with NumPy array IO
+    py::object get_hash(py::array inp,
+                        py::array trg) {
+          float dct_tmp_[check_dct_dim][check_dct_dim];
+          py::array dct_tmp = py::array_t<float>(std::vector<ptrdiff_t>{check_dct_dim,check_dct_dim}, &dct_tmp_[0][0]);
+          get_dct(inp, dct_tmp);
+          get_hash_dct(dct_tmp, trg);
           return py::cast<py::none>(Py_None);
     }
              
