@@ -54,10 +54,8 @@ public:
     py::object get_hash_dct(py::array inp,
                         py::array trg) {
           // check input dimensions
-           if ( inp.ndim() < 2 || inp.ndim() > 3 )
-            throw std::runtime_error("Input should be 2-D/3-D NumPy array");
-          if(inp.itemsize() != 4 && inp.itemsize() != 1)
-            throw std::runtime_error("Input data should be unsigned char or 32bit float");
+          if (inp.ndim() > 2 || inp.itemsize() != 4)
+            throw std::runtime_error("Input should be 1-D or 2-D NumPy float array");
           if (trg.ndim() != 1 || trg.itemsize() != 1)
             throw std::runtime_error("Target should be 1-D NumPy uint8 array");
 
@@ -82,7 +80,7 @@ public:
     }
     
     // wrap C++ function with NumPy array IO
-    py::object get_hash(py::array inp,
+    py::array get_hash(py::array inp,
                         py::array trg) {
           float dct_tmp_[check_dct_dim][check_dct_dim];
           py::array dct_tmp = py::array_t<float>(std::vector<ptrdiff_t>{check_dct_dim,check_dct_dim}, &dct_tmp_[0][0]);
@@ -124,6 +122,7 @@ PYBIND11_MODULE(naphash_cpp, m) {
     py::class_<pynaphash>(m, "naphash")
         .def(py::init<const int, const naphash::rot_inv_type, const bool, const bool>(), py::arg("dct_dim") = 32, py::arg("rot_inv_mode") = naphash::rot_inv_full,  py::arg("apply_center_crop") = false, py::arg("is_rgb") = true)
         .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image")
+        .def("get_dct",  &pynaphash::get_dct, "Calculate dct based on input image")
         .def("get_hash_dct",  &pynaphash::get_hash_dct, "Calculate naphash based on dct input")
         .def("get_bitlen",  &pynaphash::get_bitlen, "Returns number of usable bits of resulting naphashes")
         .def("set_norm",  &pynaphash::set_norm, "Set custom naphash norm coeff weights")
