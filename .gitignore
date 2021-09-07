@@ -2,4 +2,5 @@
 build/*
 inp.jpg
 training_paths.txt
+ordered_paths_normalized.txt
 _*.ipynb
