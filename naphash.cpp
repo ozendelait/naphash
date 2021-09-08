@@ -4,6 +4,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 #include <numeric>
+#include <algorithm>
 
 //internal method to convert, crop and resize input image to single channel cv::Mat
 static cv::Mat _naphash_getMat(uchar* ptr, int w, int h, int c, int imtype, int stepsz, bool is_rgb, bool apply_center_crop, int trg_sz) {
@@ -15,14 +16,15 @@ static cv::Mat _naphash_getMat(uchar* ptr, int w, int h, int c, int imtype, int 
     if(apply_center_crop && (w!=h)) {
         int fix_offset = (w%2 != h%2);
         int c0 = (w - h + 1 - fix_offset)/2, m0 = std::min(w,h);
+
         if(c0 > 0){
             int x1 = c0+m0+fix_offset;
-            if(x1 < w)
-                inp = cv::Mat(inp, cv::Rect(c0,0, x1-c0, m0));
+            if((x1 < w)&& c0 > 0)
+                inp = cv::Mat(inp, cv::Rect(c0, 0, m0, m0));
         } else {
             int y0 = -c0-fix_offset;
             if(y0 > 0)
-                inp = cv::Mat(inp, cv::Rect(0,y0,m0,m0-y0));
+                inp = cv::Mat(inp, cv::Rect(0, y0, m0, m0));
         }
     }
     //PIL's LANCZOS works best for downsampling; INTER_AREA is second place (INTER_LANCZOS is not suitable)
@@ -78,6 +80,8 @@ void naphash::get_dct_u8(unsigned char* ptr, int w, int h, int c, int stepsz, un
     cv::Mat inp = _naphash_getMat(ptr, w, h, c, imtype, stepsz, this->c3_is_rgb, this->apply_center_crop, this->dct_dim);
     inp.convertTo(inp, CV_32FC1);
     cv::Mat dct(this->dct_dim, this->dct_dim, CV_32FC1, ptr_trg, this->dct_dim*sizeof(float));
+    
+    char dbgtxt[1024]={0};
     cv::dct(inp,dct);
     if(this->rot_inv_mode != rot_inv_none)
         dct = cv::abs(dct);
@@ -140,9 +144,18 @@ void naphash::get_hash_u8(unsigned char* ptr, int w, int h, int c, int stepsz, u
 }
                                                                   
 
-void naphash::set_nap_norm(const float *ptr, int num_coeffs)
+void naphash::set_nap_norm(const float *ptr, int num_coeffs, bool do_normalization)
 {
-    _naphash_cpyNorm(ptr, this->nap_norm_w, num_coeffs, false);
+    float nap_norm_normalize[nap_norm_len];
+    const float *ptr_use = do_normalization ? nap_norm_normalize : ptr;
+    num_coeffs = std::min(nap_norm_len,num_coeffs);
+    if(do_normalization) {
+        const float norm256 = 256.0f/(*std::min_element(ptr,ptr+num_coeffs));
+        const float max_s16 = 32767.0f;
+        for(int i = 0; i < num_coeffs; ++i)
+            nap_norm_normalize[i] = (int)(std::min(ptr[i]*norm256,max_s16)+0.5);
+    }
+    _naphash_cpyNorm(ptr_use, this->nap_norm_w, num_coeffs, (do_normalization && (rot_inv_mode != rot_inv_none)));
 }
                                                                   
 void naphash::get_nap_norm(float *ptr_trg)

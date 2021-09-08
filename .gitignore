@@ -1,6 +1,8 @@
+__pycache__/*
 .ipynb_checkpoints/*
 build/*
 inp.jpg
 training_paths.txt
-ordered_paths_normalized.txt
+ordered_paths_balanced.txt
+ordered_dct_balanced.npz
 _*.ipynb

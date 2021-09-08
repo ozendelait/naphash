@@ -19,7 +19,7 @@ public:
     
     int get_bitlen(); //returns number of bits of resulting naphash
     
-    void set_nap_norm(const float *ptr, int num_coeffs);// input ptr must have size num_coeffs*sizeof(float)                                   
+    void set_nap_norm(const float *ptr, int num_coeffs, bool do_normalization);// input ptr must have size num_coeffs*sizeof(float)                                   
     void get_nap_norm(float *ptr_trg);//ptr_trg must have size nap_norm_len*sizeof(float)    
     
 private:

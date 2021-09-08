@@ -101,11 +101,11 @@ public:
           return py::cast<py::none>(Py_None);
     }
     
-    py::object set_norm(py::array inp) {
+    py::object set_norm(py::array inp, const bool do_normalization=true) {
           if ( inp.ndim() != 1 ||  inp.itemsize() != 4 )
             throw std::runtime_error("Input should be 1-D NumPy float array.");
           auto buf = inp.request();
-          nobj.set_nap_norm((float*)buf.ptr, inp.shape()[0]);
+          nobj.set_nap_norm((float*)buf.ptr, inp.shape()[0], do_normalization);
           return py::cast<py::none>(Py_None);
     }
 };
