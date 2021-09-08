@@ -1,6 +1,7 @@
 __pycache__/*
 .ipynb_checkpoints/*
 build/*
+cifar10/
 inp.jpg
 training_paths.txt
 ordered_paths_balanced.txt
