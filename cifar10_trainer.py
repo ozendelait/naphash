@@ -7,11 +7,13 @@ from fastai2.vision.all import aug_transforms, Normalize, DataBlock, ImageBlock,
 from torchvision.transforms import RandomCrop, RandomHorizontalFlip
 #necessary for recorder metrics printout
 import fastai_metrics 
-from fastai_metrics import silent_progress
+from fastai_metrics import silent_progress, plot_confusion_matrix
 
 import contextlib
 import matplotlib.pyplot as plt
 import os, glob
+from collections import Counter
+import numpy as np
 
 def files_in_subdirs(start_dir, pattern = ["*.png","*.jpg","*.jpeg"]):
     files = []
@@ -19,6 +21,19 @@ def files_in_subdirs(start_dir, pattern = ["*.png","*.jpg","*.jpeg"]):
         for dir,_,_ in os.walk(start_dir):
             files.extend(glob.glob(os.path.join(dir,p)))
     return files
+
+def get_cat(p):
+    return p.split('/')[-2]
+
+def reduce_to(cifar10_paths, max_num=5000, per_cat={}, idx_train=10000):
+    train_paths, cnt_num = [], {}
+    for p in cifar10_paths[idx_train:]:
+        cat = get_cat(p)
+        if cnt_num.get(cat,0) >= per_cat.get(cat,max_num):
+            continue
+        train_paths.append(p)
+        cnt_num[cat] = cnt_num.get(cat,0)+1
+    return cifar10_paths[:idx_train]+train_paths
 
 def train_cifar10(cifar10_paths, 
                   idx_train=10000, # the first x cifar10_paths should be validation paths; remainder training
@@ -69,7 +84,23 @@ def train_cifar10(cifar10_paths,
     
     learn.remove_cb(ProgressCallback) #necessary due to strange bug (see https://github.com/fastai/fastprogress/issues/72)
     res = learn.tta(n=10)
-    tta_acc = float(accuracy(*res))
+    #calculate per-class accuracy
+    vocab_inv = {v:k for k,v in ods_train.vocab.o2i.items()}
+    val_trg = [t.item() for t in res[1]]
+    val_res = [t.argmax().item() for t in res[0]]
+    
+    corr_pred = {'all':0}
+    for i in range(idx_train):
+        if val_trg[i] == val_res[i]:
+            corr_pred[val_trg[i]] = corr_pred.get(val_trg[i],0)+1
+            corr_pred['all'] += 1
+    count_idx = Counter(val_trg)
+    acc_per_class = {vocab_inv[c]:corr_pred.get(c,0)/count_idx[c] for c in count_idx}
+    # the test set has an equal distribution of all classes -> mean over classes == mean over all
+    # acc_per_class['all'] = corr_pred['all']/idx_train
+    
     if verbose:
-        print("Accuracy (tta) :", tta_acc)
-    return tta_acc
+        plot_confusion_matrix(val_res,val_trg,ods_train.vocab.o2i)
+        plt.show()
+        print("Min/Mean acc. (tta) : %f/%f"%(np.min(list(acc_per_class.values())), np.mean(list(acc_per_class.values()))), acc_per_class)
+    return acc_per_class

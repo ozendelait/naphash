@@ -2,9 +2,15 @@
 from fastai2.imports import patch, delegates
 from fastai2.torch_core import subplots
 from fastai2.learner import *
+
+from sklearn.metrics import confusion_matrix
+
 import math
+import itertools
 import numpy as np
 import matplotlib.pyplot as plt
+
+
 
 @patch
 @delegates(subplots)
@@ -35,6 +41,34 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
         ax.legend(loc='best')
     plt.show()
 
+#based on fastai code https://github.com/fastai/fastai/blob/master/fastai/interpret.py
+def plot_confusion_matrix(pred, true_y,  vocab={}, normalize=False, title='Confusion matrix', cmap="Blues", norm_dec=2,
+                          plot_txt=True, **kwargs):
+    "Plot the confusion matrix, with `title` and using `cmap`."
+    # This function is mainly copied from the sklearn docs
+    cm = confusion_matrix(true_y, pred)
+    if normalize: cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    fig = plt.figure(**kwargs)
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    tick_marks = np.arange(len(vocab))
+    plt.xticks(tick_marks, vocab, rotation=90)
+    plt.yticks(tick_marks, vocab, rotation=0)
+
+    if plot_txt:
+        thresh = cm.max() / 2.
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            coeff = f'{cm[i, j]:.{norm_dec}f}' if normalize else f'{cm[i, j]}'
+            plt.text(j, i, coeff, horizontalalignment="center", verticalalignment="center", color="white" if cm[i, j] > thresh else "black")
+
+    ax = fig.gca()
+    ax.set_ylim(len(vocab)-.5,-.5)
+
+    plt.tight_layout()
+    plt.ylabel('Actual')
+    plt.xlabel('Predicted')
+    plt.grid(False)
+    
 # still needs to be enclosed in "with contextlib.redirect_stdout(None):" to work
 from fastai2.vision.all import Learner, Recorder, ProgressCallback
 import fastprogress
