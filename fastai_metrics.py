@@ -34,3 +34,24 @@ def plot_metrics(self: Recorder, nrows=None, ncols=None, figsize=None, **kwargs)
         ax.set_title(name if i > 1 else 'losses')
         ax.legend(loc='best')
     plt.show()
+
+# still needs to be enclosed in "with contextlib.redirect_stdout(None):" to work
+from fastai2.vision.all import Learner, Recorder, ProgressCallback
+import fastprogress
+from functools import partial
+class silent_progress():
+    ''' Context manager to disable the progress update bar and Recorder print'''
+    def __init__(self,learn:Learner):
+        self.learn = learn
+        self.prev_recorder = None
+        
+    def __enter__(self):
+        fastprogress.fastprogress.NO_BAR = True
+        self.learn.remove_cb(ProgressCallback)
+        if hasattr(self.learn, 'recorder') and hasattr(self.learn.recorder, 'silent'):
+            self.prev_recorder = self.learn.recorder.silent
+            self.learn.recorder.silent = True
+        return self.learn
+    
+    def __exit__(self,type,value,traceback):
+        self.learn.recorder.silent = self.prev_recorder
