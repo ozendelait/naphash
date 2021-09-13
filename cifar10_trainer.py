@@ -5,9 +5,11 @@ from fastai2.vision.all import ProgressCallback
 from fastai2.data.transforms import RegexLabeller
 from fastai2.vision.all import aug_transforms, Normalize, DataBlock, ImageBlock, CategoryBlock, Resize, IndexSplitter
 from torchvision.transforms import RandomCrop, RandomHorizontalFlip
+from torch import Tensor as pyttensor, cuda as pytcuda
+
 #necessary for recorder metrics printout
 import fastai_metrics 
-from fastai_metrics import silent_progress, plot_confusion_matrix
+from fastai_metrics import silent_progress, plot_confusion_matrix, FocalLoss
 
 import contextlib
 import matplotlib.pyplot as plt
@@ -22,17 +24,27 @@ def files_in_subdirs(start_dir, pattern = ["*.png","*.jpg","*.jpeg"]):
             files.extend(glob.glob(os.path.join(dir,p)))
     return files
 
+cif_cats = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+cif_col = {'airplane':'c', 'automobile':'r', 'bird':'m', 'cat':'k', 'deer':'orange', 'dog':'y', 'frog':'limegreen', 'horse':'saddlebrown', 'ship':'b', 'truck':'darkgreen'}
+
+
 def get_cat(p):
     return p.split('/')[-2]
+def count_per_cat(cifar10_paths, idx_train=10000):
+    return Counter([get_cat(p) for p in cifar10_paths[idx_train:]])
 
-def reduce_to(cifar10_paths, max_num=5000, per_cat={}, idx_train=10000):
-    train_paths, cnt_num = [], {}
+def reduce_to(cifar10_paths, max_num=5000, per_cat={}, multiple_cat={}, idx_train=10000):
+    train_paths_cat, cnt_num = {}, {}
     for p in cifar10_paths[idx_train:]:
         cat = get_cat(p)
         if cnt_num.get(cat,0) >= per_cat.get(cat,max_num):
             continue
-        train_paths.append(p)
+        train_paths_cat.setdefault(cat,[]).append(p)
         cnt_num[cat] = cnt_num.get(cat,0)+1
+    train_paths = []
+    for c in train_paths_cat.keys():
+        for _ in range(multiple_cat.get(c,1)):
+            train_paths += train_paths_cat[c]
     return cifar10_paths[:idx_train]+train_paths
 
 def train_cifar10(cifar10_paths, 
@@ -42,7 +54,8 @@ def train_cifar10(cifar10_paths,
                   bs = 512,  #resnet34 w. bs 512 fits easily on Titan RTX (22GB of RAM); larger bs do not increase speed
                   img_dim_load = 128,  # this is larger than the input 32x32; givings augmentations a larger chance to pad/augment
                   img_dim_cif = 96, # this is also larger than the input; giving model larger receptive field)
-                  verbose = True):  
+                  verbose = True,
+                  weights_per_class = None):  
     
     get_cls = RegexLabeller(pat = r'.*/(.*)/')
     #default fastai augmentations (reflective padding, horizontal flipping, up to 10 deg rotation;)
@@ -68,7 +81,19 @@ def train_cifar10(cifar10_paths,
         print("Using: ", len(ods_train.train_ds.items), len(ods_train.valid_ds.items), len(bad_valid))
         ods_train.show_batch(max_n=9 , figsize=(5,5))
         plt.show()
-    learn = cnn_learner(ods_train, model, metrics=accuracy, pretrained=True)
+    if not weights_per_class is None:
+        #using FocalLoss with per-class weighting
+        vocab_inv = {v:k for k,v in ods_train.vocab.o2i.items()}
+        all_weights = [weights_per_class.get(vocab_inv[i],1.0) for i in range(len(vocab_inv))]
+        weight_cel= pyttensor([1.] * np.array(all_weights))
+        if pytcuda.is_available():
+            weight_cel = weight_cel.cuda()
+        learn = cnn_learner(ods_train, model, metrics=accuracy, pretrained=True, loss_func=FocalLoss(weight=weight_cel))
+    else:   
+        learn = cnn_learner(ods_train, model, metrics=accuracy, pretrained=True)
+    
+    # learn.lossfunc = CrossEntropyFlat(weight = Tensor([1.] * data.c).cuda())
+    
     learn.model = torch.nn.DataParallel(learn.model, device_ids=[0, 1])
     for epoch_passes in [epochs_per_pass,epochs_per_pass]:
         if not verbose:

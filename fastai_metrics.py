@@ -1,7 +1,11 @@
 #based on code from Ignacio Oguiza at https://forums.fast.ai/t/plotting-metrics-after-learning/69937/3
-from fastai2.imports import patch, delegates
+from fastai2.imports import patch, delegates, use_kwargs_dict
 from fastai2.torch_core import subplots
 from fastai2.learner import *
+from  fastai2.data.all import CrossEntropyLossFlat
+
+from torch.nn import CrossEntropyLoss
+from torch import exp as pytexp
 
 from sklearn.metrics import confusion_matrix
 
@@ -9,8 +13,6 @@ import math
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-
-
 
 @patch
 @delegates(subplots)
@@ -68,6 +70,32 @@ def plot_confusion_matrix(pred, true_y,  vocab={}, normalize=False, title='Confu
     plt.ylabel('Actual')
     plt.xlabel('Predicted')
     plt.grid(False)
+
+# adapted from https://github.com/fastai/fastai/blob/52d6302eb4487e86382e663ef5c10ee950c07ad1/fastai/losses.py
+class FocalLoss(CrossEntropyLoss):
+    y_int = True
+    @use_kwargs_dict(keep=True, weight=None, ignore_index=-100, reduction='mean')
+    def __init__(self, *args, gamma=2, **kwargs):
+        self.gamma = gamma
+        self.reduce = kwargs.pop('reduction') if 'reduction' in kwargs else 'mean'
+        super().__init__(*args, reduction='none', **kwargs)
+    def __call__(self, inp, targ, **kwargs):
+        ce_loss = super().__call__(inp, targ, **kwargs)
+        pt = pytexp(-ce_loss)
+        fl_loss = (1-pt)**self.gamma * ce_loss
+        return fl_loss.mean() if self.reduce == 'mean' else fl_loss.sum() if self.reduce == 'sum' else fl_loss
+class FocalLossFlat(CrossEntropyLossFlat):
+    y_int = True
+    @use_kwargs_dict(keep=True, weight=None, ignore_index=-100, reduction='mean')
+    def __init__(self, *args, gamma=2, axis=-1, **kwargs):
+        self.gamma = gamma
+        self.reduce = kwargs.pop('reduction') if 'reduction' in kwargs else 'mean'
+        super().__init__(*args, reduction='none', axis=axis, **kwargs)
+    def __call__(self, inp, targ, **kwargs):
+        ce_loss = super().__call__(inp, targ, **kwargs)
+        pt = pytexp(-ce_loss)
+        fl_loss = (1-pt)**self.gamma * ce_loss
+        return fl_loss.mean() if self.reduce == 'mean' else fl_loss.sum() if self.reduce == 'sum' else fl_loss
     
 # still needs to be enclosed in "with contextlib.redirect_stdout(None):" to work
 from fastai2.vision.all import Learner, Recorder, ProgressCallback
@@ -89,3 +117,4 @@ class silent_progress():
     
     def __exit__(self,type,value,traceback):
         self.learn.recorder.silent = self.prev_recorder
+        
