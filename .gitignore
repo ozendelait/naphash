@@ -7,3 +7,5 @@ training_paths.txt
 ordered_paths_balanced.txt
 ordered_dct_balanced.npz
 _*.ipynb
+res*.json
+cifar10_*.npz

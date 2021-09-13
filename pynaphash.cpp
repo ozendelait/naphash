@@ -65,7 +65,7 @@ public:
                                || inp.shape()[1] !=  check_dct_dim 
                                || inp.strides()[0] != check_dct_dim*sizeof(float)))
              throw std::runtime_error("Input 2D dct dimensions/step width invalid!");
-          else if(inp.ndim() == 1 && inp.shape()[0] !=  check_dct_dim*check_dct_dim*sizeof(float))
+          else if(inp.ndim() == 1 && inp.shape()[0] !=  check_dct_dim*check_dct_dim)
              throw std::runtime_error("Input 1D dct size invalid!");
           int num_trg_bytes = nobj.get_bitlen()/8;
           if(trg.shape()[0] < num_trg_bytes){
