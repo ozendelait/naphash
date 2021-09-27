@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import os, glob
 from collections import Counter
 import numpy as np
+import json
 
 def files_in_subdirs(start_dir, pattern = ["*.png","*.jpg","*.jpeg"]):
     files = []
@@ -26,7 +27,7 @@ def files_in_subdirs(start_dir, pattern = ["*.png","*.jpg","*.jpeg"]):
 
 cif_cats = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 cif_col = {'airplane':'c', 'automobile':'r', 'bird':'m', 'cat':'k', 'deer':'orange', 'dog':'y', 'frog':'limegreen', 'horse':'saddlebrown', 'ship':'b', 'truck':'darkgreen'}
-
+cif_sets = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'B0', 'B1', 'B2', 'b0', 'b1', 'b2', 'i0', 'i1', 'i2', 'I0', 'I1', 'I2', 'm0', 'm1', 'm2', 'm3']
 
 def get_cat(p):
     return p.split('/')[-2]
@@ -46,6 +47,17 @@ def reduce_to(cifar10_paths, max_num=5000, per_cat={}, multiple_cat={}, idx_trai
         for _ in range(multiple_cat.get(c,1)):
             train_paths += train_paths_cat[c]
     return cifar10_paths[:idx_train]+train_paths
+
+def reduce_paths(list_id="r0", max_num=5000, per_cat={}, multiple_cat={}, idx_train=10000):
+    sets = json.load(open('cifar10_hashsets.json','r'))
+    train_paths_cat = {}
+    train_paths = []
+    for c,l in sets[list_id].items():
+        train_paths_cat[c]=[sets['paths'][i] for i in l[:int(per_cat.get(c,max_num))]]
+    for c in cif_cats:
+        for _ in range(multiple_cat.get(c,1)):
+            train_paths += train_paths_cat[c]
+    return sets['paths'][:idx_train]+train_paths
 
 def train_cifar10(cifar10_paths, 
                   idx_train=10000, # the first x cifar10_paths should be validation paths; remainder training
