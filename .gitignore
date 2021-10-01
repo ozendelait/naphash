@@ -5,7 +5,8 @@ cifar10/
 inp.jpg
 training_paths.txt
 ordered_paths_balanced.txt
-ordered_dct_balanced.npz
+ordered_dct_*.npz
 _*.ipynb
 res*.json
 cifar10_*.npz
+hist_*
