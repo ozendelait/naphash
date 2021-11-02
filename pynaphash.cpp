@@ -88,6 +88,25 @@ public:
           get_hash_dct(dct_tmp, trg);
           return py::cast<py::none>(Py_None);
     }
+    
+    // wrap C++ function with NumPy array IO
+    int get_hash_fast(py::array_t<unsigned char> inp,
+                      py::array_t<float> dct_tmp_f32,
+                      py::array_t<unsigned char> trg) {  
+    //int get_hash_fast(py::array inp,
+    //                  py::array dct_tmp_f32,
+    //                  py::array trg) {      
+          //auto buf = inp.request();
+          //auto buf2 = dct_tmp_f32.request();
+          //auto buf3 = trg.request();
+          //nobj.get_dct_u8((unsigned char*)buf.ptr, 32, 32, 1, 32, (unsigned char*)buf2.ptr);
+          //nobj.get_hash_dct((float*)buf2.ptr, (unsigned char*)buf3.ptr);
+          unsigned char *inpc = (unsigned char *)&(inp.unchecked<2>()(0,0)), *outpc = (unsigned char *)&(trg.unchecked<1>()(0));
+          unsigned char * tmpc = (unsigned char *)&(dct_tmp_f32.unchecked<1>()(0));
+          nobj.get_dct_u8(inpc, 32, 32, 1, 32, tmpc);
+          nobj.get_hash_dct((float*)tmpc, outpc);
+          return 0;
+    }
              
     int get_bitlen() {
         return nobj.get_bitlen();
@@ -124,6 +143,7 @@ PYBIND11_MODULE(naphash_cpp, m) {
         .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image")
         .def("get_dct",  &pynaphash::get_dct, "Calculate dct based on input image")
         .def("get_hash_dct",  &pynaphash::get_hash_dct, "Calculate naphash based on dct input")
+        .def("get_hash_fast",  &pynaphash::get_hash_fast, "Calculate naphash based on 32x32x1_u8 image")
         .def("get_bitlen",  &pynaphash::get_bitlen, "Returns number of usable bits of resulting naphashes")
         .def("set_norm",  &pynaphash::set_norm, "Set custom naphash norm coeff weights")
         .def("get_norm",  &pynaphash::get_norm, "Get naphash norm coeff weights");

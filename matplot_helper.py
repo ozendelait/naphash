@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import json
 from tqdm.notebook import tqdm as tqdm_nb
+import numpy as np
 
 from async_dct_loader import load_img_tar
 import cv2

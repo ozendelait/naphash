@@ -10,3 +10,6 @@ _*.ipynb
 res*.json
 cifar10_*.npz
 hist_*
+cifar10_hashsets.json
+paper_figs/
+
