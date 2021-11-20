@@ -66,8 +66,10 @@ def train_cifar10(cifar10_paths,
                   bs = 512,  #resnet34 w. bs 512 fits easily on Titan RTX (22GB of RAM); larger bs do not increase speed
                   img_dim_load = 128,  # this is larger than the input 32x32; givings augmentations a larger chance to pad/augment
                   img_dim_cif = 96, # this is also larger than the input; giving model larger receptive field)
-                  verbose = True,
-                  weights_per_class = None):  
+                  verbose = True, # verbose output including data visualizations
+                  weights_per_class = None, #if set, uses focal loss with these weights-per-class
+                  device_ids = None # list of GPU device ids
+                  ):  
     
     get_cls = RegexLabeller(pat = r'.*/(.*)/')
     #default fastai augmentations (reflective padding, horizontal flipping, up to 10 deg rotation;)
@@ -105,8 +107,8 @@ def train_cifar10(cifar10_paths,
         learn = cnn_learner(ods_train, model, metrics=accuracy, pretrained=True)
     
     # learn.lossfunc = CrossEntropyFlat(weight = Tensor([1.] * data.c).cuda())
-    
-    learn.model = torch.nn.DataParallel(learn.model, device_ids=[0, 1])
+    if device_ids:
+        learn.model = torch.nn.DataParallel(learn.model, device_ids=device_ids)
     for epoch_passes in [epochs_per_pass,epochs_per_pass]:
         if not verbose:
             learn.recorder.silent = True

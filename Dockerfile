@@ -41,3 +41,6 @@ RUN apt-get update && apt-get install sudo && \
 USER udocker
 RUN sudo chown -R udocker:udocker /workspace
 
+# example docker commands:
+# docker build -t naphash .
+# docker run -p 8889:8889 --shm-size=28G -u $UID:$UID -v $PWD:/workspace/local -it naphash
