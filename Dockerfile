@@ -29,16 +29,15 @@ RUN cd /workspace/fastai && pip install -e "."
 
 RUN pip install onnx==1.7.0 ipyexperiments==0.1.17 onnxruntime-gpu==1.4.0 image-similarity-measures==0.3.5 mysql-connector-python==8.0.18
 RUN apt-get install -y libgl1-mesa-glx
-#RUN pip install "opencv-python>=4.4.0.0" pylibjpeg-libjpeg
 RUN conda install -yc conda-forge "opencv==4.5.3"
 
 #starting jupyter notebook with the password naphash
 CMD /bin/bash -c "jupyter notebook --ip=0.0.0.0 --port=8889 --allow-root --no-browser --NotebookApp.password='sha1:26c148c4c3d7:f3fb45584ca8f933451d8e05e6861b54f3fe7822'"
 
-##switch to non-root user with sudo privileges
-#RUN apt-get update && apt-get install sudo && \
-#    adduser --disabled-password --gecos "" udocker && \
-#    adduser udocker sudo && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-#USER udocker
-#RUN sudo chown -R udocker:udocker /workspace
+##switch to non-root user with sudo privileges (run with --user 1000:1000 or equivalent)
+RUN apt-get update && apt-get install sudo && \
+    adduser --disabled-password --gecos "" udocker && \
+    adduser udocker sudo && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+USER udocker
+RUN sudo chown -R udocker:udocker /workspace
 
