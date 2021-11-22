@@ -9,10 +9,10 @@ RUN apt-get update && apt-get install -y wget git nasm zlib1g-dev software-prope
     apt-get clean
     #rm -rf /var/lib/apt/lists/*```
 
-RUN conda install -c pytorch -c fastai fastai pytorch jupyter pybind11
-RUN conda install -c fastai nvidia-ml-py3
-RUN pip install nbdev timm
-RUN conda install -y "pylint<2.0.0" rope
+RUN conda install -c pytorch -c fastai fastai==2.0.19 jupyter==1.0.0 pybind11==2.7.0
+RUN conda install -c fastai nvidia-ml-py3==7.352.0
+RUN pip install nbdev==1.1.23 timm==0.4.12
+RUN conda install -y "pylint<2.0.0" rope==0.21.1
 
 RUN cd /workspace && git clone --recurse-submodules https://github.com/fastai/fastai && \ 
     cd /workspace/fastai && git checkout 8eef914b721a22bd0e3f53e1404d8afde395c5af
@@ -21,8 +21,8 @@ RUN cd /workspace && git clone https://github.com/fastai/fastcore && \
 
 RUN conda uninstall -y --force pillow pil jpeg libtiff libjpeg-turbo
 RUN pip   uninstall -y         pillow pil jpeg libtiff libjpeg-turbo
-RUN conda install -yc conda-forge libjpeg-turbo
-RUN CC="cc -mavx2" pip install --no-cache-dir -U --force-reinstall pillow-simd
+RUN conda install -yc conda-forge libjpeg-turbo==2.1.1
+RUN CC="cc -mavx2" pip install --no-cache-dir -U --force-reinstall pillow-simd==7.0.0.post3
 RUN cd /workspace/fastcore && pip install -e "."
 RUN cd /workspace/fastai && pip install -e "."
 
