@@ -27,7 +27,7 @@ def files_in_subdirs(start_dir, pattern = ["*.png","*.jpg","*.jpeg"]):
 
 cif_cats = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 cif_col = {'airplane':'c', 'automobile':'r', 'bird':'m', 'cat':'k', 'deer':'orange', 'dog':'y', 'frog':'limegreen', 'horse':'saddlebrown', 'ship':'b', 'truck':'darkgreen'}
-cif_sets = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'B0', 'B1', 'B2', 'b0', 'b1', 'b2', 'i0', 'i1', 'i2', 'I0', 'I1', 'I2', 'm0', 'm1', 'm2', 'm3']
+cif_sets = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'best', 'worst']
 
 def get_cat(p):
     return p.split('/')[-2]
