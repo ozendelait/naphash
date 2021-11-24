@@ -1,8 +1,8 @@
 #based on code from Ignacio Oguiza at https://forums.fast.ai/t/plotting-metrics-after-learning/69937/3
-from fastai2.imports import patch, delegates, use_kwargs_dict
-from fastai2.torch_core import subplots
-from fastai2.learner import *
-from  fastai2.data.all import CrossEntropyLossFlat
+from fastai.imports import patch, delegates, use_kwargs_dict
+from fastai.torch_core import subplots
+from fastai.learner import *
+from  fastai.data.all import CrossEntropyLossFlat
 
 from torch.nn import CrossEntropyLoss
 from torch import exp as pytexp
@@ -98,12 +98,13 @@ class FocalLossFlat(CrossEntropyLossFlat):
         return fl_loss.mean() if self.reduce == 'mean' else fl_loss.sum() if self.reduce == 'sum' else fl_loss
     
 # still needs to be enclosed in "with contextlib.redirect_stdout(None):" to work
-from fastai2.vision.all import Learner, Recorder, ProgressCallback
+from fastai.vision.all import Learner, Recorder, ProgressCallback
 import fastprogress
 from functools import partial
 class silent_progress():
     ''' Context manager to disable the progress update bar and Recorder print'''
     def __init__(self,learn:Learner):
+        print(' ', end='', flush=True) #hack; see https://github.com/tqdm/tqdm/issues/485
         self.learn = learn
         self.prev_recorder = None
         

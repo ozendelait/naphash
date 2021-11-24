@@ -1,9 +1,9 @@
 import torch
 from torchvision.models import resnet34
-from fastai2.vision.all import cnn_learner, accuracy, CSVLogger
-from fastai2.vision.all import ProgressCallback
-from fastai2.data.transforms import RegexLabeller
-from fastai2.vision.all import aug_transforms, Normalize, DataBlock, ImageBlock, CategoryBlock, Resize, IndexSplitter
+from fastai.vision.all import cnn_learner, accuracy, CSVLogger
+from fastai.vision.all import ProgressCallback
+from fastai.data.transforms import RegexLabeller
+from fastai.vision.all import aug_transforms, Normalize, DataBlock, ImageBlock, CategoryBlock, Resize, IndexSplitter
 from torchvision.transforms import RandomCrop, RandomHorizontalFlip
 from torch import Tensor as pyttensor, cuda as pytcuda
 
