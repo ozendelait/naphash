@@ -1,5 +1,6 @@
 __pycache__/*
 .ipynb_checkpoints/*
+.Trash*
 build/*
 cifar10/
 inp.jpg
