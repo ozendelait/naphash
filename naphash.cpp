@@ -3,7 +3,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
-#include <numeric>
+#include <numeric> //needed for std::accumulate
 #include <algorithm>
 
 //internal method to convert, crop and resize input image to single channel cv::Mat
@@ -43,7 +43,7 @@ static void _naphash_cpyNorm(const float* pSrc, float* pTrg, int num_coeffs, con
         //sloppy, writes each transposable index twice (mean of identical values on second pass does not change both values).
         for(int i=0; i<nap_norm_len;++i) {
             int i_tr = naphash_idx_tr[i];
-            float res = (pTrg[i]+pTrg[i_tr])*0.5;
+            float res = (pTrg[i]+pTrg[i_tr])*0.5f;
             pTrg[i] = pTrg[i_tr] = res;
         }
     }
@@ -107,7 +107,7 @@ void naphash::get_hash_dct(float* dct, unsigned char* ptr_trg)
         normed_coeffs_tr[i] = normed_coeffs[nap_norm_idx_tr0[i]]+normed_coeffs[nap_norm_idx_tr1[i]];
     const float *pAcc =  concatenate_transposed?normed_coeffs_tr:normed_coeffs;
     // regardless of result length, we use the same number of initial coefficients for mean (64 or 32)
-    const float thr_val = thr_f * std::accumulate(pAcc, pAcc+num_add,0);
+    const float thr_val = thr_f * (float)std::accumulate(pAcc, pAcc+num_add,0.0f);
     char dbgtxt[1024]={0};
     
     const unsigned int *idx_pack = (this->rot_inv_mode == rot_inv_swap)?naphash_pack_nondiag_idx:naphash_pack_idx;
@@ -115,9 +115,9 @@ void naphash::get_hash_dct(float* dct, unsigned char* ptr_trg)
     const unsigned char set_bit_lut[8]={0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1};
         
     //pack result into ptr_trg bits
-    for(int i=0; i<len_pack/8; ++i)
+    for(int i=0; i<(int)(len_pack/8); ++i)
         ptr_trg[i] = 0;
-    for(int i=0; i<len_pack; ++i){
+    for(int i=0; i<(int)len_pack; ++i){
         if(pAcc[idx_pack[i]] > thr_val)
             ptr_trg[i/8] |= set_bit_lut[i&0x7];
     }
@@ -153,7 +153,7 @@ void naphash::set_nap_norm(const float *ptr, int num_coeffs, bool do_normalizati
         const float norm256 = 256.0f/(*std::min_element(ptr,ptr+num_coeffs));
         const float max_s16 = 32767.0f;
         for(int i = 0; i < num_coeffs; ++i)
-            nap_norm_normalize[i] = (int)(std::min(ptr[i]*norm256,max_s16)+0.5);
+            nap_norm_normalize[i] = (float)((int)(std::min(ptr[i]*norm256,max_s16)+0.5));
     }
     _naphash_cpyNorm(ptr_use, this->nap_norm_w, num_coeffs, (do_normalization && (rot_inv_mode != rot_inv_none)));
 }

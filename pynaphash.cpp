@@ -37,10 +37,10 @@ public:
             trg.itemsize() != 4) throw std::runtime_error("trg dimensions invalid!");
 
 
-          int h = inp.shape()[0], w = inp.shape()[1], c = (inp.ndim() == 2)?1:inp.shape()[2];
+          int h = (int)inp.shape()[0], w = (int)inp.shape()[1], c = ((int)inp.ndim() == 2)?1:(int)inp.shape()[2];
           unsigned char* ptr = (unsigned char*) buf.ptr;
           unsigned char* ptr_trg = (unsigned char*) buf2.ptr;
-          int stepsz = inp.strides()[0];
+          int stepsz = (int)inp.strides()[0];
           if(inp.strides()[1] != inp.itemsize()*c)
               throw std::runtime_error("Non-standard channel stride not supported. Use np.ascontiguousarray for inp!");
           // call pure C++ function
@@ -82,10 +82,16 @@ public:
     // wrap C++ function with NumPy array IO
     py::array get_hash(py::array inp,
                         py::array trg) {
-          float dct_tmp_[check_dct_dim][check_dct_dim];
-          py::array dct_tmp = py::array_t<float>(std::vector<ptrdiff_t>{check_dct_dim,check_dct_dim}, &dct_tmp_[0][0]);
+          float dct_tmp_[32*32];
+		  float *pDct_tmp_ = &dct_tmp_[0];
+		  bool bFreeDyn = (check_dct_dim > 32);
+		  if (bFreeDyn)
+			  pDct_tmp_ = new float[check_dct_dim*check_dct_dim];
+          py::array dct_tmp = py::array_t<float>(std::vector<ptrdiff_t>{check_dct_dim,check_dct_dim}, &dct_tmp_[0]);
           get_dct(inp, dct_tmp);
           get_hash_dct(dct_tmp, trg);
+		  if (bFreeDyn)
+			  delete[] pDct_tmp_;
           return py::cast<py::none>(Py_None);
     }
     
@@ -124,7 +130,7 @@ public:
           if ( inp.ndim() != 1 ||  inp.itemsize() != 4 )
             throw std::runtime_error("Input should be 1-D NumPy float array.");
           auto buf = inp.request();
-          nobj.set_nap_norm((float*)buf.ptr, inp.shape()[0], do_normalization);
+          nobj.set_nap_norm((float*)buf.ptr, (int)inp.shape()[0], do_normalization);
           return py::cast<py::none>(Py_None);
     }
 };
