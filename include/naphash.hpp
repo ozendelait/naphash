@@ -1,6 +1,16 @@
 #include <napnorm.hpp>
 
-class naphash
+#ifdef _WIN32
+  #ifdef  _WIN32DLL_BUILD_NAPHASH_EXPORTS 
+    #define DLLEXPORT __declspec(dllexport)  
+  #else
+    #define DLLEXPORT __declspec(dllimport)  
+  #endif
+#else
+  #define DLLEXPORT 
+#endif
+
+class DLLEXPORT naphash
 {
 public:
     enum rot_inv_type

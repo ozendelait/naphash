@@ -43,6 +43,11 @@ message("OpenCV libs: ${OpenCV_LIBS}")
 
 add_library(naphash_cpp SHARED src/naphash_cpp.cpp)
 target_link_libraries(naphash_cpp PRIVATE opencv_core opencv_imgproc)
+
+if (WIN32)
+  target_compile_definitions(naphash_cpp PRIVATE _WIN32DLL_BUILD_NAPHASH_EXPORTS)
+endif()
+
 #set_target_properties(naphash_cpp PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_include_directories(naphash_cpp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -68,5 +73,9 @@ install(TARGETS naphash_py
           LIBRARY DESTINATION lib COMPONENT dev
           ARCHIVE DESTINATION lib COMPONENT dev
           )
+
+if(WIN32)
+  install(FILES ${PROJECT_BINARY_DIR}/$<CONFIG>/naphash_cpp.dll DESTINATION lib)
+endif()
 
 install(EXPORT naphash-export DESTINATION CMake COMPONENT dev)

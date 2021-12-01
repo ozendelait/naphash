@@ -32,6 +32,7 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
+                      '-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable]
 
         build_type = os.environ.get("BUILD_TYPE", "Release")

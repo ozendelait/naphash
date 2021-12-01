@@ -49,7 +49,7 @@ static void _naphash_cpyNorm(const float* pSrc, float* pTrg, int num_coeffs, con
     }
 }
 
-naphash::naphash(int _dct_dim, rot_inv_type _rot_inv_mode, bool _apply_center_crop, bool _c3_is_rgb): 
+DLLEXPORT naphash::naphash(int _dct_dim, rot_inv_type _rot_inv_mode, bool _apply_center_crop, bool _c3_is_rgb): 
         dct_dim(_dct_dim), rot_inv_mode(_rot_inv_mode), 
         apply_center_crop(_apply_center_crop), c3_is_rgb(_c3_is_rgb), nap_norm_len_tr(0) {
      const float * pDefaultNorm = _apply_center_crop?naphash_norm_crop:((_rot_inv_mode == rot_inv_full)?naphash_norm_rotinv:naphash_norm);
