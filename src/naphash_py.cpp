@@ -128,7 +128,7 @@ public:
 
 PYBIND11_MODULE(naphash_py, m) {
      m.doc() = "naphash; a dct-based image hash";
-    // bindings to Pet class
+
     py::enum_<naphash::rot_inv_type>(m, "rot_inv_type")
         .value("none", naphash::rot_inv_none)
         .value("swap", naphash::rot_inv_swap)
