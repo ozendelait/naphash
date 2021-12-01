@@ -16,3 +16,5 @@ paper_figs/
 src/*.pyd
 src/naphash_py.egg-info
 src/*.dll
+tests/*.pyc
+.eggs

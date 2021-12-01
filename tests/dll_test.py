@@ -6,9 +6,9 @@ import os, shutil
 def return_which(modul_name, check_lnk = True):
   import sys, glob
   for p in sys.path:
-    test_p = os.path.join(os.path.realpath(p),modul_name+'.pyd')
-    if os.path.exists(test_p):
-      return test_p
+    test_p = glob.glob(os.path.join(os.path.realpath(p),modul_name+'*.pyd'))
+    if len(test_p) > 0 and os.path.exists(test_p[0]):
+      return test_p[0]
     if not check_lnk:
       continue
     test_lnk = os.path.join(os.path.realpath(p),modul_name+'.egg-link')
@@ -19,9 +19,9 @@ def return_which(modul_name, check_lnk = True):
       check_dir = ifile.readline()
     if len(check_dir) < 5:
       continue
-    test_p = os.path.join(os.path.realpath(check_dir),modul_name+'.pyd')
-    if os.path.exists(test_p):
-      return test_p
+    test_p = glob.glob(os.path.join(os.path.realpath(p),modul_name+'*.pyd'))
+    if len(test_p) > 0 and os.path.exists(test_p[0]):
+      return test_p[0]
   return None
 
 #find dll within installed OpenCV_DIR
