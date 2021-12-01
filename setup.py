@@ -73,7 +73,7 @@ setup(
     long_description=open("README.md").read(),
     #ext_modules=[CMakeExtension('pyxmolpp2/_core')],
     #packages=find_packages(exclude=["tools"]),
-    #cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass=dict(build_ext=CMakeBuild),
     url="https://github.com/ozendelait/naphash",
     zip_safe=False,
     install_requires=[
