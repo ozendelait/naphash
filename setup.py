@@ -1,4 +1,4 @@
-#setup.py based on https://github.com/sizmailov/pyxmolpp2/blob/master/setup.py by Sergei Izmailov
+#setup.py based on https://www.benjack.io/2018/02/02/python-cpp-revisited.html by Benjamin R. Jack and https://github.com/sizmailov/pyxmolpp2/blob/master/setup.py by Sergei Izmailov
 import os
 import re
 import sys
@@ -9,12 +9,10 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
-
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
-
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -71,8 +69,9 @@ setup(
     author_email='oliver.zendel@ait.ac.at',
     description='Calculate NAPHASH/NPHASH image hashes',
     long_description=open("README.md").read(),
-    #ext_modules=[CMakeExtension('pyxmolpp2/_core')],
-    #packages=find_packages(exclude=["tools"]),
+    ext_modules=[CMakeExtension('naphash_cpp')],
+    packages=find_packages('src'),
+    package_dir={'':'src'},
     cmdclass=dict(build_ext=CMakeBuild),
     url="https://github.com/ozendelait/naphash",
     zip_safe=False,
