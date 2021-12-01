@@ -39,6 +39,7 @@ class CMakeBuild(build_ext):
 
         # Pile all .so in one place and use $ORIGIN as RPATH
         cmake_args += ["-DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE"]
+        cmake_args += ["-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE"] 
         cmake_args += ["-DCMAKE_INSTALL_RPATH={}".format("$ORIGIN")]
         cmake_args += ["-DPYBIND11_VERSION_INFO="+self.distribution.get_version()]
         if platform.system() == "Windows":
