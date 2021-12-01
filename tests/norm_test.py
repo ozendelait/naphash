@@ -11,7 +11,7 @@ class MainTest(unittest.TestCase):
         #check NPHASH weights
         self.assertEqual(int(init_weights[0]+0.5), 421)
         self.assertEqual(int(init_weights[2]+0.5), 317)
-        init_weights = np.ones(324,np.float32)
+        init_weights.fill(1)
         h_crop0 = nhpy(dct_dim=dct_dim, rot_inv_mode=rot_inv_type.full, apply_center_crop=False, is_rgb=False)
         h_crop0.get_norm(ret_coeffs = init_weights)
         #check NAPHASH weights
@@ -21,7 +21,7 @@ class MainTest(unittest.TestCase):
         for i in range(324):
           init_weights[i] = (i*7+5)
         h_crop0.set_norm(coeffs=init_weights, do_normalization=False)
-        init_weights = np.ones(324,np.float32)
+        init_weights.fill(1)
         h_crop0.get_norm(ret_coeffs=init_weights)
         read_back_ok = all([init_weights[i] == (i*7+5) for i in range(324)])
         self.assertEqual(read_back_ok, True)
