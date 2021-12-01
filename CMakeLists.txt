@@ -32,9 +32,9 @@ if (NOT _numpy_process EQUAL 0)
 endif()
 find_package(OpenCV)
 
-include_directories(${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 message("Python libs: ${PYTHON_LIBRARIES}")
 message("OpenCV libs: ${OpenCV_LIBS}")
 
-pybind11_add_module(naphash_cpp pynaphash.cpp naphash.cpp)
+pybind11_add_module(naphash_cpp src/pynaphash.cpp src/naphash.cpp)
 target_link_libraries(naphash_cpp PRIVATE ${OpenCV_LIBS} ${PYTHON_LIBRARIES})
