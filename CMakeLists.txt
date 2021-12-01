@@ -41,13 +41,15 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs} ${CMAKE_CURREN
 message("Python libs: ${PYTHON_LIBRARIES}")
 message("OpenCV libs: ${OpenCV_LIBS}")
 
-add_library(naphash_cpp src/naphash_cpp.cpp)
+add_library(naphash_cpp SHARED src/naphash_cpp.cpp)
 target_link_libraries(naphash_cpp PRIVATE opencv_core opencv_imgproc)
+#set_target_properties(naphash_cpp PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_include_directories(naphash_cpp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 pybind11_add_module(naphash_py src/naphash_py.cpp )
 add_dependencies(naphash_py naphash_cpp)
-target_link_libraries(naphash_py PRIVATE ${PYTHON_LIBRARIES} naphash_cpp)
+target_link_libraries(naphash_py PUBLIC ${PYTHON_LIBRARIES})
+target_link_libraries(naphash_py PRIVATE naphash_cpp)
 target_include_directories(naphash_py PRIVATE ${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs})
 
 install(TARGETS naphash_cpp
