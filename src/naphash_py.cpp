@@ -7,7 +7,17 @@
 
 namespace py = pybind11;
 
-class pynaphash
+#ifdef _WIN32
+  #ifdef  WIN32DLL_EXPORTS 
+    #define DLLEXPORT __declspec(dllexport)  
+  #else
+    #define DLLEXPORT __declspec(dllimport)  
+  #endif
+#else
+  #define DLLEXPORT 
+#endif
+
+class DLLEXPORT pynaphash
 {   
     naphash nobj;
     int check_dct_dim;
