@@ -13,4 +13,6 @@ cifar10_*.npz
 hist_*
 cifar10_hashsets.json
 paper_figs/
-
+src/*.pyd
+src/naphash_py.egg-info
+src/*.dll

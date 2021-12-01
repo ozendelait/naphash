@@ -63,13 +63,15 @@ class CMakeBuild(build_ext):
                               cwd=self.build_temp)
 
 setup(
-    name='naphash',
+    name='naphash_py',
     version='0.7',
     author='Oliver Zendel',
     author_email='oliver.zendel@ait.ac.at',
     description='Calculate NAPHASH/NPHASH image hashes',
     long_description=open("README.md").read(),
-    ext_modules=[CMakeExtension('naphash_cpp')],
+    ext_modules=[CMakeExtension('naphash_py')],
+    include_package_data=True,
+    test_suite='tests',
     packages=find_packages('src'),
     package_dir={'':'src'},
     cmdclass=dict(build_ext=CMakeBuild),
