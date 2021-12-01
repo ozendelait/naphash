@@ -17,6 +17,7 @@ import os, glob
 from collections import Counter
 import numpy as np
 import json
+from tqdm.notebook import tqdm as tqdm_nb
 
 def files_in_subdirs(start_dir, pattern = ["*.png","*.jpg","*.jpeg"]):
     files = []
