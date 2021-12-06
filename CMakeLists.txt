@@ -80,6 +80,7 @@ target_link_libraries(naphash_py PUBLIC ${PYTHON_LIBRARIES})
 target_link_libraries(naphash_py PRIVATE naphash_cpp)
 target_include_directories(naphash_py PRIVATE ${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs})
 target_compile_features(naphash_py PRIVATE cxx_std_17)
+target_compile_definitions(naphash_py PRIVATE PYBIND11_VERSION_INFO=${PYBIND11_VERSION_INFO})
 install(TARGETS naphash_cpp
           EXPORT naphash-export COMPONENT dev
           LIBRARY DESTINATION lib COMPONENT dev

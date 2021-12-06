@@ -154,7 +154,13 @@ static py::array nphash_bgr_func(py::array img) {
 
 
 PYBIND11_MODULE(naphash_py, m) {
-     m.doc() = "naphash; a dct-based image hash";
+     m.doc() = "NAPHash; a dct-based image hash";
+
+    #ifdef PYBIND11_VERSION_INFO
+    #define STRINGIFY(x) #x
+    #define TOSTRINGCONV(x) STRINGIFY(x)
+    m.attr("__version__") = TOSTRINGCONV(PYBIND11_VERSION_INFO);
+    #endif
 
     py::enum_<naphash::rot_inv_type>(m, "rot_inv_type")
         .value("none", naphash::rot_inv_none)
