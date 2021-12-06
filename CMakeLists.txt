@@ -35,7 +35,18 @@ endif()
 if (NOT _numpy_process EQUAL 0)
     message(FATAL_ERROR "Can't locate numpy include dirs")
 endif()
-find_package(OpenCV)
+
+if (NOT WIN32 AND NOT OpenCV_FOUND)
+    # Add libopencv from conda user directory to searchpath
+    execute_process(COMMAND whoami OUTPUT_VARIABLE current_user OUTPUT_STRIP_TRAILING_WHITESPACE)
+    file(GLOB OCV_USER_DIR LIST_DIRECTORIES true /home/${current_user}/.conda/pkgs/libopencv-4*)
+    list(FILTER OCV_USER_DIR EXCLUDE REGEX bz2)
+    if(OCV_USER_DIR)
+        set(OCV_USER_DIR "${OCV_USER_DIR}/lib/cmake/opencv4/")
+    endif()
+endif()
+find_package(OpenCV PATHS OCV_USER_DIR)
+
 
 include_directories(${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 message("Python libs: ${PYTHON_LIBRARIES}")
