@@ -8,7 +8,19 @@ project(naphash_cpp CXX)
 set(CPACK_PACKAGE_VERSION ${PYBIND11_VERSION_INFO})
 include(CPack)
 set(CMAKE_BUILD_TYPE Release)
-find_package(pybind11 REQUIRED)
+
+
+if (NOT WIN32)
+    # Add pybind11 from conda user directory to searchpath
+    execute_process(COMMAND whoami OUTPUT_VARIABLE current_user OUTPUT_STRIP_TRAILING_WHITESPACE)
+    file(GLOB PYB11_USER_DIR LIST_DIRECTORIES true /home/${current_user}/.conda/pkgs/pybind11-2*)
+    list(FILTER PYB11_USER_DIR EXCLUDE REGEX bz2)
+    if(PYB11_USER_DIR)
+        set(PYB11_USER_DIR "${PYB11_USER_DIR}/share/cmake/pybind11")
+    endif()
+endif()
+
+find_package(pybind11 REQUIRED PATHS PYB11_USER_DIR)
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.11.99999")
   find_package(Python ${PY_VERSION} REQUIRED)
@@ -36,7 +48,7 @@ if (NOT _numpy_process EQUAL 0)
     message(FATAL_ERROR "Can't locate numpy include dirs")
 endif()
 
-if (NOT WIN32 AND NOT OpenCV_FOUND)
+if (NOT WIN32)
     # Add libopencv from conda user directory to searchpath
     execute_process(COMMAND whoami OUTPUT_VARIABLE current_user OUTPUT_STRIP_TRAILING_WHITESPACE)
     file(GLOB OCV_USER_DIR LIST_DIRECTORIES true /home/${current_user}/.conda/pkgs/libopencv-4*)
