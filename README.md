@@ -1,12 +1,14 @@
-## NAPHash - A fast orientation-invariant perceptual image hash
+# NAPHash - A fast orientation-invariant perceptual image hash
 
 
-Install:
+## Install:
 `python -m pip install git+https://github.com/ozendelait/naphash`
 
 In conda environments, install pybind11 first: `conda install pybind11` .
 You can put ` OpenCV_DIR=<path_to_ocv_root> ` in front if you need to link to a specific OpenCV version.
+Note: C++ OpenCV libs are required to build the project (e.g.  `conda install -c conda-forge "opencv==4.5.3"`)
 
+## Citation:
 If you use NAPHash, please cite our associated paper:
 
     @inproceedings{Zendel_2021_ICECET,
@@ -20,5 +22,5 @@ If you use NAPHash, please cite our associated paper:
 
 NAPHash copyright by AIT - Austrian Institute of Technology Gmbh
 
-Acknowledgement: 
+## Acknowledgement: 
 This research has received funding from Mobility of the Future; a research, technology, and innovation funding program of the Austrian Ministry of Climate Action.
