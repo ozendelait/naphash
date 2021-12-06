@@ -4,6 +4,7 @@
 #include <vector>
 #include <naphash.hpp>
 #include <iostream>
+#include <optional>
 
 namespace py = pybind11;
 
@@ -80,18 +81,22 @@ public:
     
     // wrap C++ function with NumPy array IO
     py::array get_hash(py::array img,
-                        py::array ret_hash) {
-          float dct_tmp_[32*32];
-		  float *pDct_tmp_ = &dct_tmp_[0];
-		  bool bFreeDyn = (check_dct_dim > 32);
-		  if (bFreeDyn)
-			  pDct_tmp_ = new float[check_dct_dim*check_dct_dim];
+                       std::optional<py::array> ret_hash) {
+      float dct_tmp_[32*32];
+      // return newly allocated data pointer in case of None, is handled by python garbage collector
+      py::array _ret_hash = ret_hash.has_value()?ret_hash.value():py::array_t<unsigned char>((const int)((get_bitlen()+7)/8));
+      if(_ret_hash.is_none() || _ret_hash.ndim() == 0) // sometimes None gets cast to a 0 dimensional py::array
+         _ret_hash = py::array_t<unsigned char>((const int)((get_bitlen()+7)/8));
+      float *pDct_tmp_ = &dct_tmp_[0];
+      bool bFreeDyn = (check_dct_dim > 32);
+      if (bFreeDyn)
+        pDct_tmp_ = new float[check_dct_dim*check_dct_dim];
           py::array dct_tmp = py::array_t<float>(std::vector<ptrdiff_t>{check_dct_dim,check_dct_dim}, &dct_tmp_[0]);
           get_dct(img, dct_tmp);
-          get_hash_dct(dct_tmp, ret_hash);
-		  if (bFreeDyn)
-			  delete[] pDct_tmp_;
-          return py::cast<py::none>(Py_None);
+          get_hash_dct(dct_tmp, _ret_hash);
+      if (bFreeDyn)
+        delete[] pDct_tmp_;
+      return _ret_hash;
     }
     
     // wrap C++ function with NumPy array IO
@@ -137,7 +142,7 @@ PYBIND11_MODULE(naphash_py, m) {
     
     py::class_<pynaphash>(m, "naphash")
         .def(py::init<const int, const naphash::rot_inv_type, const bool, const bool>(), py::arg("dct_dim") = 32, py::arg("rot_inv_mode") = naphash::rot_inv_full,  py::arg("apply_center_crop") = false, py::arg("is_rgb") = true)
-        .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image", py::arg("img"), py::arg("ret_hash"))
+        .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image", py::arg("img"), py::arg("ret_hash") = py::none())
         .def("get_dct",  &pynaphash::get_dct, "Calculate dct based on input image", py::arg("img"), py::arg("ret_dct"))
         .def("get_hash_dct",  &pynaphash::get_hash_dct, "Calculate naphash based on dct input", py::arg("dct_inp"), py::arg("ret_hash"))
         .def("get_hash_fast",  &pynaphash::get_hash_fast, "Calculate naphash based on 32x32x1_u8 image", py::arg("img"), py::arg("dct_tmp_f32"), py::arg("ret_hash"))
