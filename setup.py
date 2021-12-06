@@ -66,10 +66,10 @@ class CMakeBuild(build_ext):
 
 setup(
     name='naphash_py',
-    version='0.7',
+    version='0.8',
     author='Oliver Zendel',
     author_email='oliver.zendel@ait.ac.at',
-    description='Calculate NAPHASH/NPHASH image hashes',
+    description='Calculate NAPHash/NPHash image hashes',
     long_description=open("README.md").read(),
     ext_modules=[CMakeExtension('naphash_py')],
     include_package_data=True,
@@ -84,6 +84,6 @@ setup(
         "pybind11"
     ],
     classifiers=[
-        'License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)',
+        'License :: OSI Approved :: MIT License'
     ],
 )
