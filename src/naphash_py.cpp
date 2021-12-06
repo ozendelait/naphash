@@ -131,6 +131,28 @@ public:
     }
 };
 
+
+static py::array naphash_rgb_func(py::array img) {
+  pynaphash nap_obj = pynaphash(32, naphash::rot_inv_full);
+  return nap_obj.get_hash(img, std::nullopt);
+}
+
+static py::array nphash_rgb_func(py::array img) {
+  pynaphash nap_obj = pynaphash(32, naphash::rot_inv_none);
+  return nap_obj.get_hash(img, std::nullopt);
+}
+
+static py::array naphash_bgr_func(py::array img) {
+  pynaphash nap_obj = pynaphash(32, naphash::rot_inv_full,false,false);
+  return nap_obj.get_hash(img, std::nullopt);
+}
+
+static py::array nphash_bgr_func(py::array img) {
+  pynaphash nap_obj = pynaphash(32, naphash::rot_inv_none,false,false);
+  return nap_obj.get_hash(img, std::nullopt);
+}
+
+
 PYBIND11_MODULE(naphash_py, m) {
      m.doc() = "naphash; a dct-based image hash";
 
@@ -140,7 +162,7 @@ PYBIND11_MODULE(naphash_py, m) {
         .value("full", naphash::rot_inv_full)
         .export_values();
     
-    py::class_<pynaphash>(m, "naphash")
+    py::class_<pynaphash>(m, "naphash_obj")
         .def(py::init<const int, const naphash::rot_inv_type, const bool, const bool>(), py::arg("dct_dim") = 32, py::arg("rot_inv_mode") = naphash::rot_inv_full,  py::arg("apply_center_crop") = false, py::arg("is_rgb") = true)
         .def("get_hash",  &pynaphash::get_hash, "Calculate naphash based on input image", py::arg("img"), py::arg("ret_hash") = py::none())
         .def("get_dct",  &pynaphash::get_dct, "Calculate dct based on input image", py::arg("img"), py::arg("ret_dct"))
@@ -149,4 +171,10 @@ PYBIND11_MODULE(naphash_py, m) {
         .def("get_bitlen",  &pynaphash::get_bitlen, "Returns number of usable bits of resulting naphashes")
         .def("set_norm",  &pynaphash::set_norm, "Set custom naphash norm coeff weights", py::arg("coeffs"), py::arg("do_normalization") = true)
         .def("get_norm",  &pynaphash::get_norm, "Get naphash norm coeff weights", py::arg("ret_coeffs"));
+        
+   m.def("naphash_bgr", &naphash_bgr_func, "Return standard NPHash for one bgr image (slow conviniece function; consider using naphash_obj).", py::arg("img"));
+   m.def("nphash_bgr", &nphash_bgr_func, "Return standard NAPHash for one bgr image (slow conviniece function; consider using naphash_obj).", py::arg("img"));
+   
+   m.def("naphash_rgb", &naphash_rgb_func, "Return standard NPHash for one rgb image (slow conviniece function; consider using naphash_obj).", py::arg("img"));
+   m.def("nphash_rgb", &nphash_rgb_func, "Return standard NAPHash for one rgb image (slow conviniece function; consider using naphash_obj).", py::arg("img"));
 }

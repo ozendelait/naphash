@@ -3,7 +3,7 @@ import numpy as np
 
 class MainTest(unittest.TestCase):
     def test_norm(self):
-        from naphash_py import naphash as nhpy, rot_inv_type
+        from naphash_py import naphash_obj as nhpy, rot_inv_type
         dct_dim = 32
         init_weights = np.ones(324,np.float32)
         h_crop0 = nhpy(dct_dim=dct_dim, rot_inv_mode=rot_inv_type.none, apply_center_crop=False, is_rgb=False)

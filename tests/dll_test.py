@@ -35,7 +35,7 @@ def find_ocv_dll(root_dir, comp):
 class MainTest(unittest.TestCase):
     def test_dll(self):
         try:
-          from naphash_py import naphash as nhpy, rot_inv_type
+          from naphash_py import naphash_obj as nhpy, rot_inv_type
         except ImportError as e:
           trg_dir = os.path.dirname(return_which("naphash_py"))
           ocv_dir = os.environ[[k for k in os.environ if 'opencv_dir' in k.lower()][0]]
