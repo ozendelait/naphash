@@ -11,7 +11,7 @@ Note: C++ OpenCV libs are required to build the project (e.g.  `conda install -c
 For faster calculations, create a naphash_obj and use its functions.
 
 ```python
-from naphash_py import naphash_obj as npobj
+from naphash_py import naphash_obj as npobj, rot_inv_type
 from skimage import io
 test_img = io.imread('https://upload.wikimedia.org/wikipedia/commons/b/b6/SIPI_Jelly_Beans_4.1.07.tiff')
 calcnap_rgb = npobj(dct_dim = 32, rot_inv_mode = rot_inv_type.full, apply_center_crop = False, is_rgb = True)
