@@ -11,7 +11,7 @@ Note: C++ OpenCV libs are required to build the project (e.g.  `conda install -c
 For faster calculations, create a naphash_obj and use its functions.
 
 ```python
-from naphash_py import naphash_obj as npobj
+from naphash_py import naphash_obj as npobj, rot_inv_type
 from skimage import io
 test_img = io.imread('https://upload.wikimedia.org/wikipedia/commons/b/b6/SIPI_Jelly_Beans_4.1.07.tiff')
 calcnap_rgb = npobj(dct_dim = 32, rot_inv_mode = rot_inv_type.full, apply_center_crop = False, is_rgb = True)
@@ -33,6 +33,11 @@ from naphash_py import naphash_bgr
 naphash_rgb(test_img)
 > array([ 69,  21,  53,  77, 108,  13,  35, 212,  21,  85, 186, 135,   5,
        212,  17,  31, 181, 116, 189, 127, 125], dtype=uint8)
+import numpy as np
+all(naphash_rgb(test_img) == naphash_rgb(np.ascontiguousarray(np.rot90(test_img))))
+> True
+all(naphash_rgb(test_img) == naphash_rgb(test_img[::-1]))
+> True
 ```
 ## Citation:
 If you use NAPHash, please cite our associated paper:
