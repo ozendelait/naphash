@@ -33,6 +33,11 @@ from naphash_py import naphash_bgr
 naphash_rgb(test_img)
 > array([ 69,  21,  53,  77, 108,  13,  35, 212,  21,  85, 186, 135,   5,
        212,  17,  31, 181, 116, 189, 127, 125], dtype=uint8)
+import numpy as np
+all(naphash_rgb(test_img) == naphash_rgb(np.ascontiguousarray(np.rot90(test_img))))
+> True
+all(naphash_rgb(test_img) == naphash_rgb(test_img[::-1]))
+> True
 ```
 ## Citation:
 If you use NAPHash, please cite our associated paper:
