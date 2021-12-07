@@ -1,3 +1,16 @@
+/******************************************************************************
+*
+* FILENAME:     napnorm.hpp
+*
+* PURPOSE:      Header for NAPHash/NPHash weights and indices
+*               see https://github.com/ozendelait/naphash for more information
+*               
+* AUTHOR:       Oliver Zendel, AIT Austrian Institute of Technology GmbH
+*
+*  Copyright (C) 2021 AIT Austrian Institute of Technology GmbH
+*  All rights reserved.
+******************************************************************************/ 
+
 static const int nap_norm_len              = 324; //maximum length of nap norm coeffs.
 static const int naphash_pack_len          = 320; //maximum length of naphash bits
 static const int naphash_nondiag_pack_len  = 312; //maximum length of naphash bits (non-diag.)

@@ -1,3 +1,16 @@
+/******************************************************************************
+*
+* FILENAME:     naphash.hpp
+*
+* PURPOSE:      Header for C++ implementation of NAPHash; 
+*               see https://github.com/ozendelait/naphash for more information
+*               
+* AUTHOR:       Oliver Zendel, AIT Austrian Institute of Technology GmbH
+*
+*  Copyright (C) 2021 AIT Austrian Institute of Technology GmbH
+*  All rights reserved.
+******************************************************************************/ 
+
 #include <napnorm.hpp>
 
 #ifdef _WIN32
@@ -31,6 +44,7 @@ public:
     
     void set_nap_norm(const float *ptr, int num_coeffs, bool do_normalization);// input ptr must have size num_coeffs*sizeof(float)                                   
     void get_nap_norm(float *ptr_trg);//ptr_trg must have size nap_norm_len*sizeof(float)    
+    static int hamming_dist(unsigned char* ptr0, unsigned char* ptr1, int num_bytes); //helper function for hamming calculation
     
 private:
     int  dct_dim; //dct dimension (square matrix) 

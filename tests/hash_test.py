@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 
 class MainTest(unittest.TestCase):
+    #test image hash calculation itself
     def test_hash(self):
         from naphash_py import naphash_obj as nhpy, rot_inv_type, nphash_rgb, naphash_rgb, nphash_bgr, naphash_bgr
         dct_dim = 32

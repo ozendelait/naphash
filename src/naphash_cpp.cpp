@@ -1,3 +1,16 @@
+/******************************************************************************
+*
+* FILENAME:     naphash_cpp.cpp
+*
+* PURPOSE:      C++ implementation of NAPHash; 
+*               see https://github.com/ozendelait/naphash for more information
+*               
+* AUTHOR:       Oliver Zendel, AIT Austrian Institute of Technology GmbH
+*
+*  Copyright (C) 2021 AIT Austrian Institute of Technology GmbH
+*  All rights reserved.
+******************************************************************************/ 
+
 #include "naphash.hpp"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -33,6 +46,14 @@ static cv::Mat _naphash_getMat(uchar* ptr, int w, int h, int c, int imtype, int 
     return inp;
 }
 
+//internal method to copy and normalize weights. 
+//Normalized weights are positive int16 values 
+//(done to be compatible with future SSE optimizations); 
+//The smallest value is normalized to 256 (== 1.0)
+//equalize_coeffs: Invariance towards transposition of input image requires 
+//identical coefficients for weights affecting 
+//DCT coefficients with transposed indices
+
 static void _naphash_cpyNorm(const float* pSrc, float* pTrg, int num_coeffs, const bool equalize_coeffs) {
     memcpy(pTrg, pSrc, std::min(nap_norm_len,num_coeffs)*sizeof(float));
     float fill_value = pTrg[std::max(num_coeffs-1,0)]; //fill remainder with last supplied value
@@ -49,6 +70,7 @@ static void _naphash_cpyNorm(const float* pSrc, float* pTrg, int num_coeffs, con
     }
 }
 
+//Main constructor dct_dim
 DLLEXPORT naphash::naphash(int _dct_dim, rot_inv_type _rot_inv_mode, bool _apply_center_crop, bool _c3_is_rgb): 
         dct_dim(_dct_dim), rot_inv_mode(_rot_inv_mode), 
         apply_center_crop(_apply_center_crop), c3_is_rgb(_c3_is_rgb), nap_norm_len_tr(0) {
@@ -62,6 +84,13 @@ DLLEXPORT naphash::naphash(int _dct_dim, rot_inv_type _rot_inv_mode, bool _apply
         nap_norm_idx_tr1[nap_norm_len_tr++] = (naphash_idx0[i] == naphash_idx1[i])?i:i+1; //transposed idx is next (or same for diagonals)
     }
             
+}
+
+int naphash::hamming_dist(unsigned char* ptr0, unsigned char* ptr1, int num_bytes){
+  if(!ptr0 || !ptr1 || (num_bytes<=0))
+    return -1;
+  cv::Mat p0(1, num_bytes, CV_8UC1, ptr0, num_bytes), p1(1, num_bytes, CV_8UC1, ptr1, num_bytes);
+  return (int)cv::norm(p0,p1,cv::NORM_HAMMING);
 }
 
 void naphash::get_dct_f32(float* ptr, int w, int h, int c, int stepsz, unsigned char* ptr_trg)

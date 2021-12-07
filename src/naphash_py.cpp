@@ -1,3 +1,16 @@
+/******************************************************************************
+*
+* FILENAME:     naphash_py.cpp
+*
+* PURPOSE:      Python bindings for C++ implementation of NAPHash; 
+*               see https://github.com/ozendelait/naphash for more information
+*               
+* AUTHOR:       Oliver Zendel, AIT Austrian Institute of Technology GmbH
+*
+*  Copyright (C) 2021 AIT Austrian Institute of Technology GmbH
+*  All rights reserved.
+******************************************************************************/ 
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
@@ -129,9 +142,23 @@ public:
           nobj.set_nap_norm((float*)buf.ptr, (int)coeffs.shape()[0], do_normalization);
           return py::cast<py::none>(Py_None);
     }
+    
+    static int hamming_dist(py::array_t<unsigned char> h0,
+                            py::array_t<unsigned char> h1,
+                            int                 num_bytes) {
+        unsigned char *h0c = (unsigned char *)&(h0.unchecked<1>()(0)), *h1c = (unsigned char *)&(h1.unchecked<1>()(0));
+        if(num_bytes <= 0) {
+            if (h0.ndim() != 1 || h1.ndim() != 1)
+                throw std::runtime_error("Inputs should be 1-D NumPy arrays!");
+            auto check_h0 = h0.request(), check_h1 = h1.request();
+            num_bytes = (int)std::min(h0.shape()[0], h1.shape()[0]);
+        }
+        return naphash::hamming_dist(h0c,h1c,num_bytes);
+    }
 };
 
 
+// slower convenience functions which create/delete pynaphash objects for each call
 static py::array naphash_rgb_func(py::array img) {
   pynaphash nap_obj = pynaphash(32, naphash::rot_inv_full);
   return nap_obj.get_hash(img, std::nullopt);
@@ -183,4 +210,5 @@ PYBIND11_MODULE(naphash_py, m) {
    
    m.def("naphash_rgb", &naphash_rgb_func, "Return standard NPHash for one rgb image (slow conviniece function; consider using naphash_obj).", py::arg("img"));
    m.def("nphash_rgb", &nphash_rgb_func, "Return standard NAPHash for one rgb image (slow conviniece function; consider using naphash_obj).", py::arg("img"));
+   m.def("hamming_dist", &pynaphash::hamming_dist, "Hamming distance between two np.uint8 arrays (of the same length, specify length using num_bytes to speed up function).", py::arg("h0"), py::arg("h1"), py::arg("num_bytes")= 0);
 }
