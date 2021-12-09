@@ -5,7 +5,7 @@
 
 In conda environments, install pybind11 first: `conda install pybind11` .
 You can put ` OpenCV_DIR=<path_to_ocv_root> ` in front if you need to link to a specific OpenCV version.
-Note: C++ OpenCV libs are required to build the project (e.g.  `conda install -c conda-forge "opencv==4.5.3"`)
+Note: C++ OpenCV libs are required to build the project (e.g.  `conda install -c conda-forge "opencv==4.5.3"` or `DEBIAN_FRONTEND="noninteractive" sudo apt-get install -y libopencv-dev`)
 
 ## Usage:
 For faster calculations, create a naphash_obj and use its functions.
