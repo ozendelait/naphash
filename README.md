@@ -53,7 +53,7 @@ If you use NAPHash, please cite our associated paper:
     address = {Cape Town, South Africa}
     }
 
-NAPHash copyright by AIT - Austrian Institute of Technology Gmbh
+Copyright (c) 2021 by AIT - Austrian Institute of Technology Gmbh
 
 ## Acknowledgement: 
 This research has received funding from Mobility of the Future; a research, technology, and innovation funding program of the Austrian Ministry of Climate Action.
