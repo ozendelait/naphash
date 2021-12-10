@@ -5,8 +5,8 @@
 
 C++ Dependencies: pybind11, OpenCV
 
-In conda environments, both can be installed with: `conda install -yc conda-forge "opencv==4.5.3" pybind11`.
-For Ubuntu `DEBIAN_FRONTEND="noninteractive" sudo apt-get install -y libopencv-dev python-pybind11`
+In conda environments, both can be installed with: `conda install -yc conda-forge "opencv==4.5.3" pybind11`  
+or at Ubuntu >=18.04 with `DEBIAN_FRONTEND="noninteractive" sudo apt-get install -y libopencv-dev python-pybind11`.  
 You can put `OpenCV_DIR=<path_to_ocv_root> ` or `pybind11_DIR=<path_to_ocv_root> ` in front of the pip command if you need to link to a specific versions or if CMake fails to find them.
 
 ## Usage:
@@ -26,7 +26,7 @@ calcnp_bgr.get_hash(test_img)
    230, 127, 117,  16, 110, 136, 138, 172, 177, 255, 249, 213, 221,
    23, 102,  87, 114,  38, 143, 155, 170, 171,  50,  93, 225, 145, 85], dtype=uint8)
 ```      
-There are four convenience functions which directly calculate hashes from images: nphash_bgr, naphash_bgr, nphash_rgb, naphash_rgb
+There are four convenience functions which directly calculate hashes from images: `nphash_bgr, naphash_bgr, nphash_rgb, naphash_rgb`
 
 Check if your color images are in RGB (skimage, PIL) or BGR (OpenCV) and use the correct function to calculate the standard 40-byte NPHash or 21-byte NAPHash (=orientation-invariant).
 Example:
