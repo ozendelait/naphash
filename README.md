@@ -3,9 +3,11 @@
 ## Install:
 `python -m pip install git+https://github.com/ozendelait/naphash`
 
-In conda environments, install pybind11 first: `conda install pybind11` .
-You can put ` OpenCV_DIR=<path_to_ocv_root> ` in front if you need to link to a specific OpenCV version.
-Note: C++ OpenCV libs are required to build the project (e.g.  `conda install -c conda-forge "opencv==4.5.3"` or `DEBIAN_FRONTEND="noninteractive" sudo apt-get install -y libopencv-dev`)
+C++ Dependencies: pybind11, OpenCV
+
+In conda environments, both can be installed with: `conda install -yc conda-forge "opencv==4.5.3" pybind11`.
+For Ubuntu `DEBIAN_FRONTEND="noninteractive" sudo apt-get install -y libopencv-dev python-pybind11`
+You can put `OpenCV_DIR=<path_to_ocv_root> ` or `pybind11_DIR=<path_to_ocv_root> ` in front of the pip command if you need to link to a specific versions or if CMake fails to find them.
 
 ## Usage:
 For faster calculations, create a naphash_obj and use its functions.
