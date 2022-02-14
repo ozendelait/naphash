@@ -42,16 +42,17 @@ all(naphash_rgb(test_img) == naphash_rgb(test_img[::-1]))
 > True
 ```
 ## Citation:
-If you use NAPHash, please cite our associated paper:
+If you use NAPHash, please cite our associated paper https://ieeexplore.ieee.org/document/9698568 :
 
-    @inproceedings{Zendel_2021_ICECET,
-    author = {Zendel, Oliver and Zinner, Christian},
-    title = {NAPHash: Efficient Image Hash to Reduce Dataset Redundancy}
-    booktitle = {Proceedings of the International Conference on Electrical, Computer and Energy Technologies (ICECET)},
-    year = {2021},
-    month = {December},
-    address = {Cape Town, South Africa}
-    }
+    @INPROCEEDINGS{9698568,
+      author={Zendel, Oliver and Zinner, Christian},
+      booktitle={2021 International Conference on Electrical, Computer and Energy Technologies (ICECET)}, 
+      title={NAPHash: Efficient Image Hash to Reduce Dataset Redundancy}, 
+      year={2021},
+      volume={},
+      number={},
+      pages={1-6},
+      doi={10.1109/ICECET52533.2021.9698568}}
 
 Copyright (c) 2021 by AIT - Austrian Institute of Technology Gmbh
 
