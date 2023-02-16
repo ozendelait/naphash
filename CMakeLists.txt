@@ -57,8 +57,14 @@ if (NOT WIN32)
         list(APPEND CMAKE_PREFIX_PATH "${OCV_USER_DIR}/lib/cmake/opencv4/")
     endif()
 endif()
-find_package(OpenCV REQUIRED)
-
+find_package(OpenCV)
+if(NOT OpenCV_FOUND)
+    # Hacky way to allow fix conda cmake/opencv package lib path problems under Windows
+    if(WIN32)
+      set(OpenCV_RUNTIME vc16)
+    endif()
+    find_package(OpenCV REQUIRED)
+endif()
 
 include_directories(${PYTHON_INCLUDE_DIRS} ${_numpy_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 message("Python libs: ${PYTHON_LIBRARIES}")
