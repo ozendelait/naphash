@@ -32,10 +32,10 @@ There are four convenience functions which directly calculate hashes from images
 Check if your color images are in RGB (skimage, PIL) or BGR (OpenCV) and use the correct function to calculate the standard 40-byte NPHash or 21-byte NAPHash (=orientation-invariant).
 Example:
 ```python
-from naphash_py import naphash_bgr
+from naphash_py import naphash_rgb
 naphash_rgb(test_img)
-> array([ 69,  21,  53,  77, 108,  13,  35, 212,  21,  85, 186, 135,   5,
-       212,  17,  31, 181, 116, 189, 127, 125], dtype=uint8)
+> array([ 69,  21,  53,  77, 108,  13,  33, 212, 181,  85, 178, 151,   4,
+       212,  17,  23, 165, 118, 189, 127, 125], dtype=uint8)
 import numpy as np
 all(naphash_rgb(test_img) == naphash_rgb(np.ascontiguousarray(np.rot90(test_img))))
 > True
